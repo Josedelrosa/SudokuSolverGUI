@@ -1,7 +1,6 @@
 
 public class SudokuSolver {
-    private int[][] board;
-    
+    private int[][] board;    
 	public static final int EMPTY = 0; // empty cell
 	public static final int SIZE = 9; // size of our Sudoku grid
 	

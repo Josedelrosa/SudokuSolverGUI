@@ -28,6 +28,7 @@ public class SudokuPanel extends JPanel implements KeyListener  {
     private final JButton solveButton;
     private final JButton clearButton;
     private final JButton checkButton;
+ 
     private final JPanel[][] minisquarePanels;
     final int dimension = 9;
     JLabel seconds_left = new JLabel();
@@ -39,19 +40,16 @@ public class SudokuPanel extends JPanel implements KeyListener  {
 	Timer timer;
 	String seconds_string = String.format("%02d", seconds);
 	String minutes_string = String.format("%02d", minutes);	
-	JTextField field = new JTextField();
-    
-    int[][] board = { 
-			{ 3, 0, 6, 5, 0, 8, 4, 0, 0 },
-            { 5, 2, 0, 0, 0, 0, 0, 0, 0 },
-            { 0, 8, 7, 0, 0, 0, 0, 3, 1 },
-            { 0, 0, 3, 0, 1, 0, 0, 8, 0 },
-            { 9, 0, 0, 8, 6, 3, 0, 0, 5 },
-            { 0, 5, 0, 0, 9, 0, 6, 0, 0 },
-            { 1, 3, 0, 0, 0, 0, 2, 5, 0 },
-            { 0, 0, 0, 0, 0, 0, 0, 7, 4 },
-            { 0, 0, 5, 2, 0, 6, 3, 0, 0 } };    
+	JTextField field = new JTextField();	
 
+	
+	SudokuGenerator sudokuGenerator = new SudokuGenerator();
+	
+	int[][] board = sudokuGenerator.Generate();
+	
+
+	
+// Generates Panel	
 	SudokuPanel(){	
 		
 		grid = new JTextField[9][9];		
@@ -60,6 +58,7 @@ public class SudokuPanel extends JPanel implements KeyListener  {
                 JTextField field = new JTextField();
                 grid[i][j] = field;   
                 
+                // Adds Mouse listener to editable squares
                 if(board[i][j] != 0) {
                     field.setText(String.valueOf(board[i][j]));
                     field.setEditable(false);
@@ -77,9 +76,8 @@ public class SudokuPanel extends JPanel implements KeyListener  {
             	                    field.setBackground(Color.WHITE);
             	                }
             	            }
-                	    	field.setBackground(Color.YELLOW);          	    	
-                      
-                	         
+                	    	field.setBackground(Color.YELLOW);         	    	
+                                     	         
                 	    }
                 	});
                 	
@@ -90,10 +88,10 @@ public class SudokuPanel extends JPanel implements KeyListener  {
         
         gridPanel   = new JPanel();
         buttonPanel = new JPanel();
-        timer();        
+        
         Border border = BorderFactory.createLineBorder(Color.BLACK, 1);
         Dimension fieldDimension = new Dimension(30, 30);
-
+        // Customizes border layout
         for (int i = 0; i < dimension; ++i) {
             for (int j = 0; j < dimension; ++j) {
                 JTextField field = grid[i][j];
@@ -110,6 +108,7 @@ public class SudokuPanel extends JPanel implements KeyListener  {
         minisquarePanels = new JPanel[minisquareDimension][minisquareDimension];
         Border minisquareBorder = BorderFactory.createLineBorder(Color.BLACK, 2);
         
+        // Sets squares on panel
         for (int x = 0; x < minisquareDimension; x++) {
             for (int y = 0; y < minisquareDimension; y++) {
                 JPanel panel = new JPanel();
@@ -119,7 +118,7 @@ public class SudokuPanel extends JPanel implements KeyListener  {
                 gridPanel.add(panel);
             }
         }
-
+        // Sets small squares on 3x3 panel
         for (int x = 0; x < dimension; x++) {
             for (int y = 0; y < dimension; y++) {
                 int minisquareX = x / minisquareDimension;
@@ -128,10 +127,12 @@ public class SudokuPanel extends JPanel implements KeyListener  {
             }
         }
         
+        // Button Panel
         gridPanel.setBorder(BorderFactory.createLineBorder(Color.BLACK, 2));
         clearButton = new JButton("Clear");
         solveButton = new JButton("Solve"); 
-        checkButton = new JButton("Check All");        
+        checkButton = new JButton("Check All");
+        
         
         buttonPanel.setLayout(new FlowLayout(FlowLayout.LEADING));
         buttonPanel.add(clearButton);
@@ -139,11 +140,15 @@ public class SudokuPanel extends JPanel implements KeyListener  {
         buttonPanel.add(checkButton);
         buttonPanel.add(errors);
         
+        // Timer
         seconds_left.setHorizontalAlignment(JLabel.RIGHT);
         seconds_left.setVerticalAlignment(JButton.BOTTOM);
-
+		seconds_left.setFont(new Font("Verdana", Font.CENTER_BASELINE, 20));
+		seconds_left.setText("Timer : " + minutes_string + ":" + seconds_string);	
+		timer();
+		
         this.setLayout(new BorderLayout());
-        this.add(gridPanel);
+        this.add(gridPanel);        
         this.add(buttonPanel, BorderLayout.SOUTH);
         this.add(seconds_left, BorderLayout.NORTH);          
         
@@ -159,21 +164,26 @@ public class SudokuPanel extends JPanel implements KeyListener  {
             checkAll();
         });
 
+
 	}
+	// Clears all grid tiles that originally did not have a number
 	public void clearAll() {
         for (int i = 0; i < dimension; i++) {
             for (int j = 0; j < dimension; j++) {
             	JTextField field = grid[i][j];         
                 field.setText("");
                 field.setBackground(Color.WHITE);
-            
+                
                 if(board[i][j] != 0) {
                 	field.setText(String.valueOf(board[i][j]));               	
                 	
-                }                         
+                }else {
+                	field.setEditable(true);
+                }
             }
         }	
 	}
+	// Solves the Sudoku puzzle
 	public void solve() {
 		SudokuSolver solver = new SudokuSolver(board);				
 		if (solver.solve()) 
@@ -195,7 +205,7 @@ public class SudokuPanel extends JPanel implements KeyListener  {
 			 }
 	
 	}	
-	
+	// Timer when game runs
 	public void timer() {
 		
 		 timer = new Timer(1000, new ActionListener() {			
@@ -208,21 +218,21 @@ public class SudokuPanel extends JPanel implements KeyListener  {
 				seconds_string = String.format("%02d", seconds);
 				minutes_string = String.format("%02d", minutes);
 				seconds_left.setFont(new Font("Verdana", Font.CENTER_BASELINE, 20));
-				seconds_left.setText("Timer : "+ minutes_string+":" + seconds_string);				
+				seconds_left.setText("Timer : " + minutes_string +":" + seconds_string);				
 
 				}
 			});
 		timer.start();
+		
 	}
-	
+	// Checks whether you solved puzzle, will give you a message
 	public void checkAll() {
 		SudokuSolver solver = new SudokuSolver(board);
 		String sonk;
 		int count = 0;
 		
 		if (solver.solve()) 
-			 {
-				
+			 {				
 				int[][] checkBoard = solver.display();
 				
 				for (int i = 0; i < dimension; i++) {
@@ -251,9 +261,10 @@ public class SudokuPanel extends JPanel implements KeyListener  {
 		 
 		
 	}
-	public int Counter() {		
+	public int counter() {		
 		return counter++;		
-	}
+	}	
+	// When pressing enter it will check the selected tile, it will light up green if correct and red if incorrect, green tiles can't be clicked on.
 	@Override
 	public void keyTyped(KeyEvent e) {
 		if(e.getKeyChar() == KeyEvent.VK_ENTER){
@@ -276,12 +287,14 @@ public class SudokuPanel extends JPanel implements KeyListener  {
 			                		System.out.println("Key Typed " + value);
 			                		
 				                	if(checkBoard[i][j] == value) {
-					            		field.setBackground(Color.GREEN); 						            		
+				                		
+				                		field.setEditable(false);
+					            		field.setBackground(Color.GREEN);					            		
 					            	}
 					            	else {
 					            		field.setBackground(Color.RED);					            		
 					     				errors.setFont(new Font("Verdana", Font.CENTER_BASELINE, 20));					     				
-					     				errors.setText("<html>Incorrect: <font color='red'>" + Counter() + "</font></html>");
+					     				errors.setText("<html>Incorrect: <font color='red'>" + counter() + "</font></html>");
 					             	} 
 			                	} catch(NumberFormatException ex){ // handle your exception
 			                	   
@@ -297,4 +310,5 @@ public class SudokuPanel extends JPanel implements KeyListener  {
 	@Override
 	public void keyReleased(KeyEvent e) {
 	}
+	
 }
